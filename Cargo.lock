@@ -1,12 +1,4 @@
 [root]
 name = "particles"
 version = "0.1.0"
-dependencies = [
- "gnuplot 0.0.18 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "gnuplot"
-version = "0.0.18"
-source = "registry+https://github.com/rust-lang/crates.io-index"
 

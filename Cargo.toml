@@ -4,4 +4,3 @@ version = "0.1.0"
 authors = ["dsotolongo <dsotolongo@twitter.com>"]
 
 [dependencies]
-gnuplot = "0.0.18"

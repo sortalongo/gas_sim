@@ -1,41 +1,89 @@
-extern crate gnuplot;
+use std::ops::{Add, Mul, Sub};
 
-use std::io;
-use gnuplot::{Axes2D, AxesCommon, Caption, Color,
-  Figure, Fix, PointSymbol, PointSize};
+type Float = f32;
 
-fn plot(axes: &mut Axes2D, x: &[f64], y: &[f64]) {
-  axes
-    .set_x_range(Fix(-5.), Fix(5.))
-    .set_y_range(Fix(-5.), Fix(5.))
-    .points(x, y, &[
-      Color("blue"),
-      PointSymbol('O'),
-      PointSize(5.)
-  ]);
+struct Time(Float);
+
+#[derive(Debug)]
+struct Vector((Float, Float));
+
+impl Mul for Vector {
+  type Output = Float;
+  fn mul(self, rhs: Vector) -> Float {
+    let Vector(v1) = self;
+    let Vector(v2) = rhs;
+    v1.0 * v2.0 + v1.1 * v2.1
+  }
+}
+
+impl Add for Vector {
+  type Output = Vector;
+  fn add(self, rhs: Vector) -> Vector {
+    let Vector(v1) = self;
+    let Vector(v2) = rhs;
+    Vector((v1.0 + v2.0, v1.1 + v2.1))
+  }
+}
+
+impl Sub for Vector {
+  type Output = Vector;
+  fn sub(self, rhs: Vector) -> Vector {
+    let Vector(v1) = self;
+    let Vector(v2) = rhs;
+    Vector((v1.0 - v2.0, v1.1 - v2.1))
+  }
+}
+
+#[derive(Debug)]
+struct Particle {
+  x: Vector,
+  v: Vector,
+  r: Float,
+  m: Float,
+}
+
+impl Particle {
+  fn tt_impact(&self, other: &Particle) -> Time {
+    Time(0.0)
+  }
+
+  fn bounce(&self, other: &Particle) -> (Particle, Particle) {
+    let v1 = Particle {
+      x: Vector((1., 1.)),
+      v: Vector((1., 1.)),
+      r: 1.,
+      m: 1.
+    };
+    let v2 = Particle {
+      x: Vector((1., 1.)),
+      v: Vector((1., 1.)),
+      r: 1.,
+      m: 1.
+    };
+    (v1, v2)
+  }
+}
+
+trait Box<P> {
+  fn create(initial: Vec<P>) -> Self;
+  fn next_collision(&self) -> (&P, &P);
+  fn update<'l>(&'l mut self, &p1: Particle, &p2: Particle) -> &'l mut Self;
 }
 
 fn main() {
-  let file = "output.gif";
+  let v1 = Particle {
+    x: Vector((1., 1.)),
+    v: Vector((1., 1.)),
+    r: 1.,
+    m: 1.
+  };
 
-  let mut fg = Figure::new();
-  fg.set_terminal(&"gif animate delay 50 loop 0", &file);
-
-  let mut x = [0f64, 1., 2.];
-  let mut y = [2f64, 3., 4.];
-
-  plot(fg.axes2d(), &x, &y);
-
-
-  x[0] -= 1.;
-  y[2] -= 3.;
-  plot(fg.axes2d(), &x, &y);
-
-  y[0] -= 1.;
-  y[2] -= 3.;
-  plot(fg.axes2d(), &x, &y);
-  fg.echo(&mut io::stdout());
-  fg.show();
-
-  println!("image saved");
+  let v2 = Particle {
+    x: Vector((1., 1.)),
+    v: Vector((1., 1.)),
+    r: 1.,
+    m: 1.
+  };
+  println!("v1: {:?}", v1);
+  println!("delta: {:?}", v1.x - v2.x);
 }
