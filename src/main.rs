@@ -7,29 +7,29 @@ struct Time(Float);
 #[derive(Debug)]
 struct Vector((Float, Float));
 
-impl Mul for Vector {
+impl<'l> Mul for &'l Vector {
   type Output = Float;
-  fn mul(self, rhs: Vector) -> Float {
-    let Vector(v1) = self;
-    let Vector(v2) = rhs;
+  fn mul(self, rhs: &Vector) -> Float {
+    let &Vector(v1) = self;
+    let &Vector(v2) = rhs;
     v1.0 * v2.0 + v1.1 * v2.1
   }
 }
 
-impl Add for Vector {
+impl<'l> Add for &'l Vector {
   type Output = Vector;
-  fn add(self, rhs: Vector) -> Vector {
-    let Vector(v1) = self;
-    let Vector(v2) = rhs;
+  fn add(self, rhs: &Vector) -> Vector {
+    let &Vector(v1) = self;
+    let &Vector(v2) = rhs;
     Vector((v1.0 + v2.0, v1.1 + v2.1))
   }
 }
 
-impl Sub for Vector {
+impl<'l> Sub for &'l Vector {
   type Output = Vector;
-  fn sub(self, rhs: Vector) -> Vector {
-    let Vector(v1) = self;
-    let Vector(v2) = rhs;
+  fn sub(self, rhs: &Vector) -> Vector {
+    let &Vector(v1) = self;
+    let &Vector(v2) = rhs;
     Vector((v1.0 - v2.0, v1.1 - v2.1))
   }
 }
@@ -85,5 +85,5 @@ fn main() {
     m: 1.
   };
   println!("v1: {:?}", v1);
-  println!("delta: {:?}", v1.x - v2.x);
+  println!("delta: {:?}", &v1.x - &v2.x);
 }
