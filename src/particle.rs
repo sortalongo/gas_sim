@@ -1,7 +1,7 @@
 use super::{CustomFloat, SIGNIFICAND, Time};
 use super::vector::Vector;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Particle {
   pub x: Vector,
   pub v: Vector,
@@ -39,30 +39,30 @@ pub fn quadratic_formula(a: CustomFloat, b: CustomFloat, c: CustomFloat) -> Opti
 }
 
 impl Particle {
-/// Computes the next time the two given particles will impact each other.
-/// Returns None if no such impact will occur.
-///
-/// # Panics
-/// - if the two particles given overlap (i.e. they have fused together)
-///
-/// # Examples
-/// ```
-/// use particles::{Particle, Time, Vector};
-/// let p1 = Particle {
-///   x: Vector((-2., 0.)),
-///   v: Vector((1., 0.)),
-///   r: 1.,
-///   m: 1.
-/// };
-/// let p2 = Particle {
-///   x: Vector((2., 0.)),
-///   v: Vector((-1., 0.)),
-///   r: 1.,
-///   m: 1.
-/// };
-/// let Time(t) = p1.impact_time(&p2).unwrap();
-/// assert!((t - 1.).abs() < 1e-10);
-/// ```
+  /// Computes the next time the two given particles will impact each other.
+  /// Returns None if no such impact will occur.
+  ///
+  /// # Panics
+  /// - if the two particles given overlap (i.e. they have fused together)
+  ///
+  /// # Examples
+  /// ```
+  /// use particles::{Particle, Time, Vector};
+  /// let p1 = Particle {
+  ///   x: Vector((-2., 0.)),
+  ///   v: Vector((1., 0.)),
+  ///   r: 1.,
+  ///   m: 1.
+  /// };
+  /// let p2 = Particle {
+  ///   x: Vector((2., 0.)),
+  ///   v: Vector((-1., 0.)),
+  ///   r: 1.,
+  ///   m: 1.
+  /// };
+  /// let Time(t) = p1.impact_time(&p2).unwrap();
+  /// assert!((t - 1.).abs() < 1e-10);
+  /// ```
   pub fn impact_time(&self, other: &Particle) -> Option<Time> {
     // solves for t:
     // | self.x - self.x + (self.v - other.v) * t | = self.r + other.r
@@ -90,19 +90,22 @@ impl Particle {
   }
 
   pub fn bounce(&self, other: &Particle) -> (Particle, Particle) {
-    let v1 = Particle {
-      x: Vector((1., 1.)),
-      v: Vector((1., 1.)),
-      r: 1.,
-      m: 1.
-    };
-    let v2 = Particle {
-      x: Vector((1., 1.)),
-      v: Vector((1., 1.)),
-      r: 1.,
-      m: 1.
-    };
-    (v1, v2)
+    let r_t = self.r + other.r;
+    let dx = &self.x - &other.x;
+    // only works for particles in contact
+    assert!((dx.norm() - r_t).abs() < 10e-5);
+
+    let dv = &self.v - &other.v;
+    let m_r = self.m * other.m / (self.m + other.m);
+
+    // dp = 2 m1 m2 / (m1 + m2) (dv . \hat{dx}) \hat{dx}
+    let dp = dx.scale(2. * m_r * (&dv * &dx) / dx.norm2());
+    let v1 = &self.v - &dp.scale(1. / self.m);
+    let v2 = &other.v + &dp.scale(1. / other.m);
+
+    let p1 = Particle { v: v1, .. self.clone() };
+    let p2 = Particle { v: v2, .. other.clone() };
+    (p1, p2)
   }
 }
 

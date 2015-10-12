@@ -1,13 +1,21 @@
 use super::{CustomFloat};
 use std::ops::{Add, Mul, Sub};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Vector(pub (CustomFloat, CustomFloat));
 
 impl Vector {
+  pub fn norm(&self) -> CustomFloat {
+    self.norm2().sqrt()
+  }
   pub fn norm2(&self) -> CustomFloat {
     let &Vector((x1, x2)) = self;
     x1 * x1 + x2 * x2
+  }
+
+  pub fn scale(&self, a: CustomFloat) -> Vector {
+    let &Vector((x1, x2)) = self;
+    Vector((a * x1, a * x2))
   }
 }
 
