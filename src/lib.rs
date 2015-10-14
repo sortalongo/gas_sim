@@ -5,10 +5,10 @@ const SIGNIFICAND: i32 = 24;
 pub struct Time(pub CustomFloat);
 
 pub use vector::Vector;
-pub use particle::Particle;
+pub use particle::{Particle, quadratic_formula};
 pub use space::Box;
 
 mod vector;
-pub mod particle;
+mod particle;
 mod space;
 

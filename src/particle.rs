@@ -16,7 +16,7 @@ pub struct Particle {
 ///
 /// # Examples
 /// ```
-/// use particles::particle::quadratic_formula;
+/// use particles::quadratic_formula;
 /// let (s1, s2) = quadratic_formula(1., 0., -1.).unwrap();
 /// assert!((s1 + 1.).abs() < 1e-10);
 /// assert!((s2 - 1.).abs() < 1e-10);
@@ -29,7 +29,7 @@ pub fn quadratic_formula(a: CustomFloat, b: CustomFloat, c: CustomFloat) -> Opti
   let ac = 4. * a * c;
   println!("ac: {:?}", ac);
 
-  if ( b2 < ac ) { None } // imaginary result
+  if b2 < ac { None } // imaginary result
   else {
     let a2 = 2. * a;
     let fst = - b / a2;
@@ -89,6 +89,32 @@ impl Particle {
     }
   }
 
+  /// Returns new particles after a collision.
+  /// Assumes that the particles are tangent to each other.
+  /// The first particle returned corresponds to self.
+  ///
+  /// # Panics
+  /// - if the two particles are not tangent (or within 10e-5 units)
+  ///
+  /// # Examples
+  /// ```
+  /// use particles::{Particle, Time, Vector};
+  /// let p1 = Particle {
+  ///   x: Vector((-1., 0.)),
+  ///   v: Vector((1., 0.)),
+  ///   r: 1.,
+  ///   m: 1.
+  /// };
+  /// let p2 = Particle {
+  ///   x: Vector((1., 0.)),
+  ///   v: Vector((-1., 0.)),
+  ///   r: 1.,
+  ///   m: 1.
+  /// };
+  /// let (p1_, p2_) = p1.bounce(&p2);
+  /// assert!((&p1_.v - &Vector((-1., 0.))).norm() < 1e-10);
+  /// assert!((&p2_.v - &Vector((1., 0.))).norm() < 1e-10);
+  /// ```
   pub fn bounce(&self, other: &Particle) -> (Particle, Particle) {
     let r_t = self.r + other.r;
     let dx = &self.x - &other.x;
@@ -106,6 +132,11 @@ impl Particle {
     let p1 = Particle { v: v1, .. self.clone() };
     let p2 = Particle { v: v2, .. other.clone() };
     (p1, p2)
+  }
+
+  pub fn evolve(&self, t: Time) -> Particle {
+    let Time(t_) = t;
+    Particle { x: &self.x + &self.v.scale(t_), .. self.clone() }
   }
 }
 
