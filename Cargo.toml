@@ -4,3 +4,4 @@ version = "0.1.0"
 authors = ["dsotolongo <dsotolongo@twitter.com>"]
 
 [dependencies]
+quickcheck = "0.2"
