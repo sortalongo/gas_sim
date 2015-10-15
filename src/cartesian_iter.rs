@@ -1,4 +1,4 @@
-pub struct CartesianProduct<'l, T>(&'l Vec<T>);
+pub struct CartesianProduct<'l, T: 'l>(pub &'l Vec<T>);
 
 impl<'l, T> IntoIterator for CartesianProduct<'l, T> {
   type Item = (&'l T, &'l T);
@@ -14,7 +14,7 @@ impl<'l, T> IntoIterator for CartesianProduct<'l, T> {
   }
 }
 
-pub struct CartesianProductIter<'l, T> {
+pub struct CartesianProductIter<'l, T: 'l> {
   vec: &'l Vec<T>,
   idx1: usize,
   idx2: usize,
