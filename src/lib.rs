@@ -6,9 +6,11 @@ pub struct Time(pub CustomFloat);
 
 pub use vector::Vector;
 pub use particle::{Particle, quadratic_formula};
-pub use space::Box;
+pub use space::BoundedBoxVec;
+pub use cartesian_iter::{CartesianProduct, CartesianProductIter};
 
 mod vector;
 mod particle;
 mod space;
+mod cartesian_iter;
 
