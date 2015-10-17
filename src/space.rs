@@ -1,9 +1,24 @@
 use super::{Vector, Particle, CartesianProduct, CartesianProductIter};
 
+enum Collision<'l> {
+  Free,
+  Wall(&'l Particle),
+  Bounce(&'l Particle, &'l Particle)
+}
+
 pub trait Space {
-  fn create(initial: Vec<Particle>) -> Self;
-  fn next_collision(&self) -> (&Particle, &Particle);
-  fn update<'l>(&'l mut self, &p1: Particle, &p2: Particle) -> &'l mut Self;
+  fn next_collision<'l, 'm>(&'l self) -> Collision<'m>;
+
+  fn update<'l>(&'l mut self, p1: &Particle) -> &'l mut Self;
+
+  fn iterate<'l>(&'l mut self) -> &'l mut Self {
+    match self.next_collision() {
+      Collision::Free => self,
+      Collision::Wall(p) => self.update(p),
+      Collision::Bounce(p1, p2) =>
+        self.update(p1).update(p2),
+    }
+  }
 }
 
 pub struct BoundedBoxVec {
@@ -44,4 +59,5 @@ impl<'l> BoundedBoxVec {
     CartesianProduct(&self.particles).into_iter()
   }
 }
+
 
