@@ -13,21 +13,12 @@ pub struct Particle {
 /// ( -b +/- sqrt(b^2 - 4ac) ) / 2a
 /// The smaller solution is always on the left.
 /// Returns None for imaginary results.
-///
-/// # Examples
-/// ```
-/// use particles::quadratic_formula;
-/// let (s1, s2) = quadratic_formula(1., 0., -1.).unwrap();
-/// assert!((s1 + 1.).abs() < 1e-10);
-/// assert!((s2 - 1.).abs() < 1e-10);
-/// ```
-// TODO: make private, write unit tests for it
 pub fn quadratic_formula(a: CustomFloat, b: CustomFloat, c: CustomFloat) -> Option<(CustomFloat, CustomFloat)> {
-  // account for floating error: we can't have degenerate solutions come up imaginary
+  // account for rounding error:
+  // in the case of b = 4ac, rounding error may cause b < 4ac.
+  // So, we increment the last bit in the mantissa by one
   let b2 = b * b + (b / 2.0_f32.powi((custom_float::MANTISSA_DIGITS - 1) as i32));
-  println!("b2: {:?}", b2);
   let ac = 4. * a * c;
-  println!("ac: {:?}", ac);
 
   if b2 < ac { None } // imaginary result
   else {
@@ -44,25 +35,6 @@ impl Particle {
   ///
   /// # Panics
   /// - if the two particles given overlap (i.e. they have fused together)
-  ///
-  /// # Examples
-  /// ```
-  /// use particles::{Particle, Time, Vector};
-  /// let p1 = Particle {
-  ///   x: Vector((-2., 0.)),
-  ///   v: Vector((1., 0.)),
-  ///   r: 1.,
-  ///   m: 1.
-  /// };
-  /// let p2 = Particle {
-  ///   x: Vector((2., 0.)),
-  ///   v: Vector((-1., 0.)),
-  ///   r: 1.,
-  ///   m: 1.
-  /// };
-  /// let Time(t) = p1.impact_time(&p2).unwrap();
-  /// assert!((t - 1.).abs() < 1e-10);
-  /// ```
   pub fn impact_time(&self, other: &Particle) -> Option<Time> {
     // solves for t:
     // | self.x - self.x + (self.v - other.v) * t | = self.r + other.r
@@ -95,26 +67,6 @@ impl Particle {
   ///
   /// # Panics
   /// - if the two particles are not tangent (or within 10e-5 units)
-  ///
-  /// # Examples
-  /// ```
-  /// use particles::{Particle, Time, Vector};
-  /// let p1 = Particle {
-  ///   x: Vector((-1., 0.)),
-  ///   v: Vector((1., 0.)),
-  ///   r: 1.,
-  ///   m: 1.
-  /// };
-  /// let p2 = Particle {
-  ///   x: Vector((1., 0.)),
-  ///   v: Vector((-1., 0.)),
-  ///   r: 1.,
-  ///   m: 1.
-  /// };
-  /// let (p1_, p2_) = p1.bounce(&p2);
-  /// assert!((&p1_.v - &Vector((-1., 0.))).norm() < 1e-10);
-  /// assert!((&p2_.v - &Vector((1., 0.))).norm() < 1e-10);
-  /// ```
   pub fn bounce(&self, other: &Particle) -> (Particle, Particle) {
     let r_t = self.r + other.r;
     let dx = &self.x - &other.x;
@@ -158,3 +110,52 @@ impl PartialEq for Particle {
 
 impl Eq for Particle {}
 
+#[cfg(test)]
+mod tests {
+  use super::super::{FloatOps, Particle, Time, Vector};
+
+  #[test]
+  fn quadratic_formula_simple() {
+    use super::quadratic_formula;
+    let (s1, s2) = quadratic_formula(1., 0., -1.).unwrap();
+    assert!(FloatOps(s1).close(&FloatOps(-1.)));
+    assert!(FloatOps(s2).close(&FloatOps(1.)));
+  }
+
+  #[test]
+  fn bounce_symmetrical_particles() {
+    let p1 = Particle {
+      x: Vector((-1., 0.)),
+      v: Vector((1., 0.)),
+      r: 1.,
+      m: 1.
+    };
+    let p2 = Particle {
+      x: Vector((1., 0.)),
+      v: Vector((-1., 0.)),
+      r: 1.,
+      m: 1.
+    };
+    let (p1_, p2_) = p1.bounce(&p2);
+    assert!((&p1_.v - &Vector((-1., 0.))).norm() < 1e-10);
+    assert!((&p2_.v - &Vector((1., 0.))).norm() < 1e-10);
+  }
+
+  #[test]
+  fn impact_time_symmetrical_partices() {
+    let p1 = Particle {
+      x: Vector((-2., 0.)),
+      v: Vector((1., 0.)),
+      r: 1.,
+      m: 1.
+    };
+    let p2 = Particle {
+      x: Vector((2., 0.)),
+      v: Vector((-1., 0.)),
+      r: 1.,
+      m: 1.
+    };
+    let Time(t) = p1.impact_time(&p2).unwrap();
+    assert!((t - 1.).abs() < 1e-10);
+  }
+}
