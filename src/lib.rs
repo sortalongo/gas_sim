@@ -9,12 +9,14 @@ pub struct Time(pub CustomFloat);
 pub use float::FloatOps;
 pub use vector::Vector;
 pub use particle::{Particle, quadratic_formula};
-pub use space::SpaceVec;
 pub use cartesian_iter::{Combination2, Combination2Iter};
+pub use space::{Collision, Space};
+pub use space_vec::SpaceVec;
 
 mod float;
 mod vector;
 mod particle;
-mod space;
 mod cartesian_iter;
+mod space;
+mod space_vec;
 
