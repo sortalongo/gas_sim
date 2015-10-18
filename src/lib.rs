@@ -1,14 +1,18 @@
 pub type CustomFloat = f32;
-const SIGNIFICAND: i32 = 24;
+mod custom_float {
+  pub use std::f32::*;
+}
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct Time(pub CustomFloat);
 
+pub use float::FloatOps;
 pub use vector::Vector;
 pub use particle::{Particle, quadratic_formula};
-pub use space::BoundedBoxVec;
-pub use cartesian_iter::{CartesianProduct, CartesianProductIter};
+pub use space::SpaceVec;
+pub use cartesian_iter::{Combination2, Combination2Iter};
 
+mod float;
 mod vector;
 mod particle;
 mod space;

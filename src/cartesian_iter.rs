@@ -1,12 +1,12 @@
-pub struct CartesianProduct<'l, T: 'l>(pub &'l Vec<T>);
+pub struct Combination2<'l, T: 'l>(pub &'l Vec<T>);
 
-impl<'l, T> IntoIterator for CartesianProduct<'l, T> {
+impl<'l, T> IntoIterator for Combination2<'l, T> {
   type Item = (&'l T, &'l T);
-  type IntoIter = CartesianProductIter<'l, T>;
+  type IntoIter = Combination2Iter<'l, T>;
 
-  fn into_iter(self) -> CartesianProductIter<'l, T> {
-    let CartesianProduct(vec) = self;
-    CartesianProductIter {
+  fn into_iter(self) -> Combination2Iter<'l, T> {
+    let Combination2(vec) = self;
+    Combination2Iter {
       vec: vec,
       idx1: 0,
       idx2: 1,
@@ -14,13 +14,13 @@ impl<'l, T> IntoIterator for CartesianProduct<'l, T> {
   }
 }
 
-pub struct CartesianProductIter<'l, T: 'l> {
+pub struct Combination2Iter<'l, T: 'l> {
   vec: &'l Vec<T>,
   idx1: usize,
   idx2: usize,
 }
 
-impl<'l, T> Iterator for CartesianProductIter<'l, T> {
+impl<'l, T> Iterator for Combination2Iter<'l, T> {
   type Item = (&'l T, &'l T);
 
   fn next(&mut self) -> Option<(&'l T, &'l T)> {

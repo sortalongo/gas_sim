@@ -1,7 +1,7 @@
-use super::{CustomFloat, SIGNIFICAND, Time};
+use super::{custom_float, CustomFloat, Time};
 use super::vector::Vector;
 
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug)]
 pub struct Particle {
   pub x: Vector,
   pub v: Vector,
@@ -24,7 +24,7 @@ pub struct Particle {
 // TODO: make private, write unit tests for it
 pub fn quadratic_formula(a: CustomFloat, b: CustomFloat, c: CustomFloat) -> Option<(CustomFloat, CustomFloat)> {
   // account for floating error: we can't have degenerate solutions come up imaginary
-  let b2 = b * b + (b / 2.0_f32.powi(SIGNIFICAND - 1));
+  let b2 = b * b + (b / 2.0_f32.powi((custom_float::MANTISSA_DIGITS - 1) as i32));
   println!("b2: {:?}", b2);
   let ac = 4. * a * c;
   println!("ac: {:?}", ac);
@@ -140,3 +140,20 @@ impl Particle {
   }
 }
 
+impl<'l> PartialEq for &'l Particle {
+  fn eq(&self, other: &&Particle) -> bool {
+    self.r.eq(&other.r) &&
+    self.m.eq(&other.m) &&
+    (&self.x).eq(&&other.x) &&
+    (&self.v).eq(&&other.v)
+  }
+
+  fn ne(&self, other: &&Particle) -> bool {
+    self.r.ne(&other.r) ||
+    self.m.ne(&other.m) ||
+    (&self.x).ne(&&other.x) ||
+    (&self.v).ne(&&other.v)
+  }
+}
+
+impl<'l> Eq for &'l Particle {}

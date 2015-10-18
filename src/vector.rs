@@ -19,6 +19,22 @@ impl Vector {
   }
 }
 
+impl<'l> PartialEq for &'l Vector {
+  fn eq(&self, other: &&Vector) -> bool {
+    let &&Vector((x1, x2)) = self;
+    let &&Vector((y1, y2)) = other;
+    x1.eq(&y1) && x1.eq(&y2)
+  }
+
+  fn ne(&self, other: &&Vector) -> bool {
+    let &&Vector((x1, x2)) = self;
+    let &&Vector((y1, y2)) = other;
+    x1.ne(&y1) || x1.ne(&y2)
+  }
+}
+
+impl<'l> Eq for &'l Vector { }
+
 impl<'l> Mul for &'l Vector {
   type Output = CustomFloat;
   fn mul(self, rhs: &Vector) -> CustomFloat {
