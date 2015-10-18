@@ -140,20 +140,21 @@ impl Particle {
   }
 }
 
-impl<'l> PartialEq for &'l Particle {
-  fn eq(&self, other: &&Particle) -> bool {
+impl PartialEq for Particle {
+  fn eq(&self, other: &Particle) -> bool {
     self.r.eq(&other.r) &&
     self.m.eq(&other.m) &&
-    (&self.x).eq(&&other.x) &&
-    (&self.v).eq(&&other.v)
+    self.x.eq(&other.x) &&
+    self.v.eq(&other.v)
   }
 
-  fn ne(&self, other: &&Particle) -> bool {
+  fn ne(&self, other: &Particle) -> bool {
     self.r.ne(&other.r) ||
     self.m.ne(&other.m) ||
-    (&self.x).ne(&&other.x) ||
-    (&self.v).ne(&&other.v)
+    self.x.ne(&other.x) ||
+    self.v.ne(&other.v)
   }
 }
 
-impl<'l> Eq for &'l Particle {}
+impl Eq for Particle {}
+

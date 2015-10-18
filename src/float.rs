@@ -1,9 +1,8 @@
 use super::{CustomFloat};
 
 use std::cmp::{Ord, Ordering};
-use std::f32;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct FloatOps(pub CustomFloat);
 
 impl FloatOps {
