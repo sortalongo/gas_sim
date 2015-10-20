@@ -1,6 +1,7 @@
 use super::{Collision, Combination2, Combination2Iter,
   FloatOps, Particle, Space, Time };
 
+#[derive(Debug)]
 pub struct SpaceVec {
   particles: Vec<Particle>,
 }
@@ -53,7 +54,7 @@ impl Space for SpaceVec {
     }
   }
 
-  fn update(self, c: Collision) -> Option<Self> {
+  fn update(&mut self, c: Collision) -> Option<&mut Self> {
     match c {
       Collision::Free => None,
       Collision::Wall {..} => unimplemented!(),
@@ -64,7 +65,8 @@ impl Space for SpaceVec {
           else { p.evolve(t) }
         ).collect();
 
-        Some(SpaceVec { particles: new_vec })
+        self.particles = new_vec;
+        Some(self)
       }
     }
   }
@@ -73,7 +75,7 @@ impl Space for SpaceVec {
 #[cfg(test)]
 mod tests {
   use super::*;
-  use super::super::{Particle, Vector};
+  use super::super::{Particle, Space, Vector};
 
   const P1: Particle = Particle {
     x: Vector((-2., 0.)),
@@ -94,7 +96,17 @@ mod tests {
       particles: vec![P1, P2],
     };
     let pairs = p_box.particle_pairs().collect::<Vec<_>>();
-    println!("{:?}", pairs);
     assert!(pairs.len() == 1);
+  }
+
+  #[test]
+  fn space_iterator_ends_when_collisions_stop() {
+    let mut space = SpaceVec { particles: vec![P1, P2] };
+    let mut i = 0;
+
+    while i < 5 && space.iterate() {
+      i += 1;
+    }
+    assert!(i == 1);
   }
 }

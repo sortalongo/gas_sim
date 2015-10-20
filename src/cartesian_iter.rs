@@ -38,3 +38,23 @@ impl<'l, T> Iterator for Combination2Iter<'l, T> {
   }
 }
 
+#[cfg(test)]
+extern crate quickcheck;
+
+#[cfg(test)]
+mod tests {
+  use super::{Combination2};
+  use super::quickcheck::quickcheck;
+
+  #[test]
+  fn length_is_2_choose_l() {
+    fn prop(v: Vec<usize>) -> bool {
+      let combo = Combination2(&v).into_iter().collect::<Vec<_>>();
+      let n = v.len();
+
+      combo.len() == if n > 0 { n * (n-1) / 2 } else { 0 }
+    }
+    quickcheck(prop as fn(Vec<usize>)->bool);
+  }
+}
+
