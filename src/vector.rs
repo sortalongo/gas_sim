@@ -1,7 +1,7 @@
 use super::{CustomFloat};
 use std::ops::{Add, Mul, Sub};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub struct Vector(pub (CustomFloat, CustomFloat));
 
 impl Vector {
