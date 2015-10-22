@@ -2,25 +2,25 @@ extern crate particles;
 extern crate rand;
 
 use particles::*;
-use rand::{thread_rng};
+use rand::{StdRng};
 
 fn main() {
   let max_particle = Particle {
-    x: Vector((15., 15.)),
+    x: Vector((20., 20.)),
     v: Vector((1., 1.)),
     m: 1.,
     r: 1.
   };
   let min_particle = Particle {
-    x: Vector((-15., -15.)),
+    x: Vector((-20., -20.)),
     v: Vector((-1., -1.)),
     m: 1.,
     r: 1.
   };
-  let mut rng = thread_rng();
+  let mut rng = StdRng::new().unwrap();
 
   let particles = (1..10)
-    .map( move |_| BoundedRand::rand(&mut rng, min_particle, max_particle))
+    .map( move |_| BoundedRand::rand(&mut rng, &min_particle, &max_particle))
     .collect::<Vec<_>>();
 
   let mut space = SpaceVec::new(particles);
@@ -28,7 +28,8 @@ fn main() {
 
   println!("starting: {:?}", space);
   while i < 10 && space.iterate() {
-    println!("{:?}", space);
+    println!("{}: {:?}", i, space);
+    i += 1;
   }
   println!("ending");
 }
