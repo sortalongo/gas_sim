@@ -13,7 +13,7 @@ pub struct Particle {
 /// ( -b +/- sqrt(b^2 - 4ac) ) / 2a
 /// The smaller solution is always on the left.
 /// Returns None for imaginary results.
-pub fn quadratic_formula(a: CustomFloat, b: CustomFloat, c: CustomFloat) -> Option<(CustomFloat, CustomFloat)> {
+fn quadratic_formula(a: CustomFloat, b: CustomFloat, c: CustomFloat) -> Option<(CustomFloat, CustomFloat)> {
   // account for rounding error:
   // in the case of b = 4ac, rounding error may cause b < 4ac.
   // So, we increment the last bit in the mantissa by one
@@ -30,6 +30,12 @@ pub fn quadratic_formula(a: CustomFloat, b: CustomFloat, c: CustomFloat) -> Opti
 }
 
 impl Particle {
+  pub fn overlaps(&self, other: &Particle) -> bool {
+    let d = (&self.x - &other.x).norm();
+    let r = self.r + other.r;
+    d < r - 1e-5
+  }
+
   /// Computes the next time the two given particles will impact each other.
   /// Returns None if no such impact will occur.
   ///
@@ -50,14 +56,19 @@ impl Particle {
 
     let s = quadratic_formula(a, b, c);
     match s {
-      Some((less, _)) if less >= 0. => Some(Time(less)),
-      Some((_, more)) if more <= 0. => None,
       None => None, // particles will never impact
-      Some(solns) => // less < 0 && more > 0 <=> particles overlap
-        unreachable!(
-          "impact_time found overlapping particles:\n{:?}\n{:?}\n{:?}",
-          solns, self, other
-        ),
+      Some((_, more)) if more <= 0. => None,
+      Some((less, _)) => {
+        assert!(
+          !self.overlaps(other),
+          "impact_time found overlapping particles:\n\
+          distance: {:?}\n\
+          self: {:?}\n\
+          other: {:?}\n",
+          (&self.x - &other.x).norm(), self, other
+        );
+        Some(Time(less))
+      }
     }
   }
 
@@ -66,12 +77,12 @@ impl Particle {
   /// The first particle returned corresponds to self.
   ///
   /// # Panics
-  /// - if the two particles are not tangent (or within 10e-5 units)
+  /// - if the two particles are not tangent (or within 1e-5 units)
   pub fn bounce(&self, other: &Particle) -> (Particle, Particle) {
     let r_t = self.r + other.r;
     let dx = &self.x - &other.x;
     // only works for particles in contact
-    assert!((dx.norm() - r_t).abs() < 10e-5);
+    assert!((dx.norm() - r_t).abs() < 1e-5);
 
     let dv = &self.v - &other.v;
     let m_r = self.m * other.m / (self.m + other.m);
