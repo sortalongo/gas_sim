@@ -7,6 +7,9 @@ use rand::{StdRng};
 fn main() {
   const NUM_PARTICLES: usize = 10;
 
+  let top_left = Vector((-20., 20.));
+  let bottom_right = Vector((20., -20.));
+
   let max_particle = Particle {
     x: Vector((20., 20.)),
     v: Vector((1., 1.)),
@@ -31,7 +34,7 @@ fn main() {
     particles.push(new_p);
   }
 
-  let mut space = SpaceVec::new(particles);
+  let mut space = SpaceBox::new(particles, top_left, bottom_right);
   let mut i = 0;
 
   println!("starting: {:?}", space);
