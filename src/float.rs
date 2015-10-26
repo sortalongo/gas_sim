@@ -2,33 +2,15 @@ use super::{CustomFloat};
 
 use std::cmp::{Ord, Ordering};
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
 pub struct FloatOps(pub CustomFloat);
+
+impl Eq for FloatOps { }
 
 impl FloatOps {
   pub fn close(&self, other: &Self) -> bool {
     let (&FloatOps(this), &FloatOps(that)) = (self, other);
     (this - that).abs() < 1e-10
-  }
-}
-
-impl PartialEq for FloatOps {
-  fn eq(&self, other: &Self) -> bool {
-    let (&FloatOps(this), &FloatOps(that)) = (self, other);
-    this.eq(&that)
-  }
-  fn ne(&self, other: &Self) -> bool {
-    let (&FloatOps(this), &FloatOps(that)) = (self, other);
-    this.ne(&that)
-  }
-}
-
-impl Eq for FloatOps { }
-
-impl PartialOrd for FloatOps {
-  fn partial_cmp(&self, other: &FloatOps) -> Option<Ordering> {
-    let (&FloatOps(this), &FloatOps(that)) = (self, other);
-    this.partial_cmp(&that)
   }
 }
 

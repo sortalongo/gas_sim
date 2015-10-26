@@ -1,6 +1,8 @@
-use super::{Particle, Time};
+use std::slice;
+use std::cmp::{PartialOrd, Ord, Ordering};
+use super::{custom_float, FloatOps, Particle, Time};
 
-#[allow(dead_code)]
+#[derive(Debug, PartialEq)]
 pub enum Collision {
   Free,
   Wall { t: Time, prev: Particle, next: Particle },
@@ -11,7 +13,31 @@ pub enum Collision {
   }
 }
 
+impl Eq for Collision { }
+
+fn t_flops(coll: &Collision) -> FloatOps {
+  match coll {
+    &Collision::Wall { t: Time(t), .. } => FloatOps(t),
+    &Collision::Bounce { t: Time(t), .. } => FloatOps(t),
+    &Collision::Free => FloatOps(custom_float::MAX),
+  }
+}
+
+impl PartialOrd for Collision {
+  fn partial_cmp(&self, other: &Collision) -> Option<Ordering> {
+    t_flops(self).partial_cmp(&t_flops(other))
+  }
+}
+impl Ord for Collision {
+  fn cmp(&self, other: &Collision) -> Ordering {
+    self.partial_cmp(other)
+        .expect(&format!("Unable to compare collisions: {:?} and {:?}", self, other))
+  }
+}
+
 pub trait Space {
+  fn particles(&self) -> slice::Iter<Particle>;
+
   fn next_collision(&self) -> Collision;
 
   fn update(&mut self, collision: Collision) -> Option<&mut Self>;
@@ -21,25 +47,4 @@ pub trait Space {
     self.update(coll).is_some()
   }
 }
-/*
-pub struct SpaceIterator<'l, T: 'l>(Option<&'l mut T>);
-
-impl<'l, T: 'l> SpaceIterator<'l, T> {
-  pub fn new(init: &'l mut T) -> SpaceIterator<'l, T> {
-    SpaceIterator(Some(init))
-  }
-}
-
-impl<'l, T: Space + 'l> Iterator for SpaceIterator<'l, T> {
-  type Item = &'l mut T;
-  fn next(&mut self) -> Option<&'l mut T> {
-    if let &mut SpaceIterator(Some(space)) = self {
-      let coll = space.next_collision();
-      let next_space = space.update(coll);
-      self.0 = next_space;
-    }
-    self.0.cloned()
-  }
-}
-*/
 

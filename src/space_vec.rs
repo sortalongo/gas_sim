@@ -1,3 +1,4 @@
+use std::slice;
 use super::{Collision, Combination2, Combination2Iter,
   FloatOps, Particle, Space, Time };
 
@@ -8,17 +9,26 @@ pub struct SpaceVec {
 
 impl<'l> SpaceVec {
   pub fn new(ps: Vec<Particle>) -> SpaceVec {
-    SpaceVec { particles: ps }
+    let space_vec = SpaceVec { particles: ps };
+    assert!(
+      !space_vec.particle_pairs().any(|pair| (pair.0).overlaps(&pair.1)),
+      "SpaceVec initialized with overlapping particles"
+    );
+    space_vec
   }
 
   // Returns an iterator over all pairs of particles
-  // contained in the BoundedBox.
+  // contained in the Space.
   fn particle_pairs(&'l self) -> Combination2Iter<'l, Particle> {
     Combination2(&self.particles).into_iter()
   }
 }
 
 impl Space for SpaceVec {
+  fn particles(&self) -> slice::Iter<Particle> {
+    self.particles.iter()
+  }
+
   fn next_collision(&self) -> Collision {
     let pairs = self.particle_pairs();
     let opt_min = pairs.fold(None, | opt_min, pair | {
@@ -42,8 +52,7 @@ impl Space for SpaceVec {
 
     if let Some((FloatOps(t), (p1, p2))) = opt_min {
       let time = Time(t);
-      let (prebounce1, prebounce2) = (p1.evolve(time), p2.evolve(time));
-      let (next1, next2) = prebounce1.bounce(&prebounce2);
+      let (next1, next2) = p1.after_bounce(&p2, time);
       Collision::Bounce {
         t: time,
         prev1: p1.clone(), prev2: p2.clone(),

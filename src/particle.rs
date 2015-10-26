@@ -101,6 +101,11 @@ impl Particle {
     let Time(t_) = t;
     Particle { x: &self.x + &self.v.scale(t_), .. self.clone() }
   }
+
+  pub fn after_bounce(&self, other: &Particle, t: Time) -> (Particle, Particle) {
+    let (prebounce1, prebounce2) = (self.evolve(t), other.evolve(t));
+    prebounce1.bounce(&prebounce2)
+  }
 }
 
 impl PartialEq for Particle {
