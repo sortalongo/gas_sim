@@ -17,7 +17,7 @@ fn quadratic_formula(a: CustomFloat, b: CustomFloat, c: CustomFloat) -> Option<(
   // account for rounding error:
   // in the case of b = 4ac, rounding error may cause b < 4ac.
   // So, we increment the last bit in the mantissa by one
-  let b2 = b * b + (b / 2.0_f32.powi((custom_float::MANTISSA_DIGITS - 1) as i32));
+  let b2 = b * b + (b / (2.0 as CustomFloat).powi((custom_float::MANTISSA_DIGITS - 1) as i32));
   let ac = 4. * a * c;
 
   if b2 < ac { None } // imaginary result
@@ -43,7 +43,7 @@ impl Particle {
   /// - if the two particles given overlap (i.e. they have fused together)
   pub fn impact_time(&self, other: &Particle) -> Option<Time> {
     // solves for t:
-    // | self.x - self.x + (self.v - other.v) * t | = self.r + other.r
+    // | self.x - other.x + (self.v - other.v) * t | = self.r + other.r
     let dv = &(&self.v - &other.v);
     let dx = &(&self.x - &other.x);
     let sr = self.r + other.r;
@@ -58,7 +58,7 @@ impl Particle {
     match s {
       None => None, // particles will never impact
       Some((_, more)) if more <= 0. => None,
-      Some((less, _)) => {
+      Some((less, more)) => {
         assert!(
           !self.overlaps(other),
           "impact_time found overlapping particles:\n\
@@ -66,6 +66,15 @@ impl Particle {
           self: {:?}\n\
           other: {:?}\n",
           (&self.x - &other.x).norm(), self, other
+        );
+        assert!(
+          !(less < 0.),
+          "impact_time found negative solution to quadratic formula:\n\
+          solution: {:?}\n\
+          distance: {:?}\n\
+          self: {:?}\n\
+          other: {:?}\n",
+          (less, more), (&self.x - &other.x).norm(), self, other
         );
         Some(Time(less))
       }
@@ -82,7 +91,14 @@ impl Particle {
     let r_t = self.r + other.r;
     let dx = &self.x - &other.x;
     // only works for particles in contact
-    assert!((dx.norm() - r_t).abs() < 1e-5);
+    assert!(
+      (dx.norm() - r_t).abs() < 1e-5,
+      "bounce was given non-tangent particles:\n\
+      distance: {:?}\n\
+      self: {:?}\n\
+      other: {:?}\n",
+      (&self.x - &other.x).norm(), self, other
+    );
 
     let dv = &self.v - &other.v;
     let m_r = self.m * other.m / (self.m + other.m);

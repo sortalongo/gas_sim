@@ -34,13 +34,13 @@ fn main() {
     particles.push(new_p);
   }
 
-  let mut space = SpaceBox::new(particles, top_left, bottom_right);
-  let mut i = 0;
+  let space = SpaceBox::new(particles, top_left, bottom_right);
 
   println!("starting: {:?}", space);
-  while i < 10 && space.iterate() {
-    println!("{}: {:?}", i, space);
-    i += 1;
-  }
+  SpaceIterator::new(space)
+    .enumerate()
+    .take(10)
+    .inspect(|i_s| println!("{:?}", i_s))
+    .last();
   println!("ending");
 }

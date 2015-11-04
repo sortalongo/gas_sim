@@ -1,3 +1,4 @@
+use std::mem;
 use std::slice;
 use std::cmp::{PartialOrd, Ord, Ordering};
 use super::{custom_float, FloatOps, Particle, Time};
@@ -35,16 +36,37 @@ impl Ord for Collision {
   }
 }
 
-pub trait Space {
+pub trait Space: Sized {
   fn particles(&self) -> slice::Iter<Particle>;
 
   fn next_collision(&self) -> Collision;
 
-  fn update(&mut self, collision: Collision) -> Option<&mut Self>;
+  fn update(&self, collision: Collision) -> Option<Self>;
 
-  fn iterate(&mut self) -> bool {
+  fn iterate(&self) -> Option<Self> {
     let coll = self.next_collision();
-    self.update(coll).is_some()
+    self.update(coll)
+  }
+}
+
+pub struct SpaceIterator<S: Space> {
+  space: Option<S>
+}
+
+impl<S: Space> SpaceIterator<S> {
+  pub fn new(s: S) -> SpaceIterator<S> {
+    SpaceIterator {
+      space: Some(s),
+    }
+  }
+}
+
+impl<S: Space> Iterator for SpaceIterator<S> {
+  type Item = S;
+  fn next(&mut self) -> Option<S> {
+    let mut s_new = self.space.as_ref().and_then(|s| s.iterate());
+    mem::swap(&mut s_new, &mut self.space);
+    s_new
   }
 }
 

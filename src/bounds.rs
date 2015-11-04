@@ -1,6 +1,6 @@
 use super::{Collision, FloatOps, Particle, Time, Vector};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Bounds {
   top_left: Vector,
   bottom_right: Vector

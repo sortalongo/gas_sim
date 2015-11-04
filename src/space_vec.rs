@@ -63,10 +63,10 @@ impl Space for SpaceVec {
     }
   }
 
-  fn update(&mut self, c: Collision) -> Option<&mut Self> {
+  fn update(&self, c: Collision) -> Option<Self> {
     match c {
       Collision::Free => None,
-      Collision::Wall {..} => unimplemented!(),
+      Collision::Wall {..} => unreachable!(),
       Collision::Bounce { t, prev1, prev2, next1, next2 } => {
         let new_vec: Vec<_> = self.particles.iter().map( move |p: &Particle|
           if p == &prev1 { next1.clone() }
@@ -74,8 +74,7 @@ impl Space for SpaceVec {
           else { p.evolve(t) }
         ).collect();
 
-        self.particles = new_vec;
-        Some(self)
+        Some(SpaceVec { particles: new_vec })
       }
     }
   }

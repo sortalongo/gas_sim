@@ -36,7 +36,7 @@ impl Space for SpaceBox {
     min(inter_particle_coll, wall_coll)
   }
 
-  fn update(&mut self, collision: Collision) -> Option<&mut Self> {
+  fn update(&self, collision: Collision) -> Option<Self> {
     let space_vec_opt = match collision {
       Collision::Wall { t, ref prev, ref next } => {
         let new_vec: Vec<_> = self.particles().map( |p: &Particle|
@@ -44,14 +44,12 @@ impl Space for SpaceBox {
           else { p.evolve(t) }
         ).collect();
 
-        self.space_vec = SpaceVec::new(new_vec);
-        Some(())
+        Some(SpaceVec::new(new_vec))
       },
       _ => self.space_vec
         .update(collision)
-        .map(|_| ()),
     };
 
-    space_vec_opt.map(|_| self )
+    space_vec_opt.map(|sv| SpaceBox { space_vec: sv, bounds: self.bounds.clone() } )
   }
 }

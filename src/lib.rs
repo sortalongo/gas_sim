@@ -1,8 +1,8 @@
 extern crate rand;
 
-pub type CustomFloat = f32;
+pub type CustomFloat = f64;
 mod custom_float {
-  pub use std::f32::*;
+  pub use std::f64::*;
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -14,7 +14,7 @@ pub use vector::Vector;
 pub use particle::{Particle};
 pub use bounded_rand::BoundedRand;
 pub use cartesian_iter::{Combination2, Combination2Iter};
-pub use space::{Collision, Space};
+pub use space::{Collision, Space, SpaceIterator};
 pub use space_vec::SpaceVec;
 pub use space_box::SpaceBox;
 
