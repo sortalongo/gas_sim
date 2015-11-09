@@ -10,7 +10,7 @@ impl Eq for FloatOps { }
 impl FloatOps {
   pub fn close(&self, other: &Self) -> bool {
     let (&FloatOps(this), &FloatOps(that)) = (self, other);
-    (this - that).abs() < 1e-10
+    (this - that).abs() < 1e-8
   }
 }
 

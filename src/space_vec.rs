@@ -2,7 +2,7 @@ use std::slice;
 use super::{Collision, Combination2, Combination2Iter,
   FloatOps, Particle, Space, Time };
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SpaceVec {
   particles: Vec<Particle>,
 }

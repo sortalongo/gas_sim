@@ -1,22 +1,38 @@
+use rand::{Rng};
 use std::cmp::min;
 use std::slice;
-use super::{Bounds, Collision, Particle, Space, SpaceVec, Vector };
+use super::{BoundedRand, Bounds, Collision, Particle, Space, SpaceVec, Vector};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SpaceBox {
   space_vec: SpaceVec,
   bounds: Bounds
 }
 
 impl SpaceBox {
-  pub fn new(ps: Vec<Particle>, top_left: Vector, bottom_right: Vector) -> SpaceBox {
+  pub fn new(ps: Vec<Particle>, bottom_left: Vector, top_right: Vector) -> SpaceBox {
     let space_vec = SpaceVec::new(ps);
-    let bounds = Bounds::new(top_left, bottom_right);
+    let bounds = Bounds::new(top_right, bottom_left);
     assert!(
       space_vec.particles().all(|p| bounds.within(p)),
       "bounds must include all particles"
     );
     SpaceBox { space_vec: space_vec, bounds: bounds }
+  }
+
+  pub fn new_random<R: Rng>(rng: &mut R, count: usize, min: Particle, max: Particle) -> SpaceBox {
+    let mut particles = Vec::with_capacity(count);
+
+    for _ in 0..count {
+      let mut new_p: Particle;
+      loop {
+        new_p = BoundedRand::rand(rng, &min, &max);
+        if ! particles.iter().any(|p: &Particle| p.overlaps(&new_p)) { break; }
+      }
+      particles.push(new_p);
+    }
+
+    SpaceBox::new(particles, min.x, max.x)
   }
 }
 

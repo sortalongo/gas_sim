@@ -57,7 +57,7 @@ impl Particle {
     let s = quadratic_formula(a, b, c);
     match s {
       None => None, // particles will never impact
-      Some((_, more)) if more <= 0. => None,
+      Some((_, more)) if more <= 0. + 1e-5 => None,
       Some((less, more)) => {
         assert!(
           !self.overlaps(other),

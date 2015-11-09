@@ -2,27 +2,27 @@ use super::{Collision, FloatOps, Particle, Time, Vector};
 
 #[derive(Debug, Clone)]
 pub struct Bounds {
-  top_left: Vector,
-  bottom_right: Vector
+  top_right: Vector,
+  bottom_left: Vector
 }
 
 impl Bounds {
-  pub fn new(top_left: Vector, bottom_right: Vector) -> Bounds {
-    Bounds::check_bounds(&top_left, &bottom_right);
-    Bounds { top_left: top_left, bottom_right: bottom_right }
+  pub fn new(top_right: Vector, bottom_left: Vector) -> Bounds {
+    Bounds::check_bounds(&top_right, &bottom_left);
+    Bounds { top_right: top_right, bottom_left: bottom_left }
   }
 
-  fn check_bounds<'l>(top_left: &'l Vector, bottom_right: &'l Vector) {
-    let Vector((dx, dy)) = top_left - bottom_right;
-    assert!(FloatOps(dx) < FloatOps(0.),
+  fn check_bounds<'l>(top_right: &'l Vector, bottom_left: &'l Vector) {
+    let Vector((dx, dy)) = top_right - bottom_left;
+    assert!(FloatOps(dx) > FloatOps(0.),
       "top left of box must be left of bottom right");
     assert!(FloatOps(dy) > FloatOps(0.),
       "top left of box must be above bottom right");
   }
 
   pub fn within(&self, p: &Particle) -> bool {
-    let Vector((left, top)) = self.top_left;
-    let Vector((right, bottom)) = self.bottom_right;
+    let Vector((right, top)) = self.top_right;
+    let Vector((left, bottom)) = self.bottom_left;
     let Vector((x, y)) = p.x;
 
     FloatOps(left) <= FloatOps(x) &&
@@ -35,8 +35,8 @@ impl Bounds {
     let Vector((mut vx, mut vy)) = p.v;
 
     let Vector((xx, xy)) = p.x;
-    let Vector((lx, ty)) = self.top_left;
-    let Vector((rx, by)) = self.bottom_right;
+    let Vector((rx, ty)) = self.top_right;
+    let Vector((lx, by)) = self.bottom_left;
 
     let dx = if FloatOps(vx) >= FloatOps(0.) {
       vx *= -1.;

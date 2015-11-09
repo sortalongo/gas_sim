@@ -3,12 +3,10 @@ extern crate rand;
 
 use particles::*;
 use rand::{StdRng};
+use std::mem;
 
 fn main() {
   const NUM_PARTICLES: usize = 10;
-
-  let top_left = Vector((-20., 20.));
-  let bottom_right = Vector((20., -20.));
 
   let max_particle = Particle {
     x: Vector((20., 20.)),
@@ -24,20 +22,17 @@ fn main() {
   };
   let mut rng = StdRng::new().unwrap();
 
-  let mut particles = Vec::with_capacity(NUM_PARTICLES);
-  for _ in 0..NUM_PARTICLES {
-    let mut new_p: Particle;
-    loop {
-      new_p = BoundedRand::rand(&mut rng, &min_particle, &max_particle);
-      if ! particles.iter().any(|p: &Particle| p.overlaps(&new_p)) { break; }
-    }
-    particles.push(new_p);
-  }
+  let init = SpaceBox::new_random(&mut rng, NUM_PARTICLES, min_particle, max_particle);
 
-  let space = SpaceBox::new(particles, top_left, bottom_right);
+  println!("starting: {:?}", init);
 
-  println!("starting: {:?}", space);
-  SpaceIterator::new(space)
+  let mut space_pairs = SpaceIterator::new(init.iterate().unwrap())
+    .scan(init, |prev, mut next| {
+       mem::swap(prev, &mut next);
+       Some((next, prev.clone()))
+    });
+
+  space_pairs
     .enumerate()
     .take(10)
     .inspect(|i_s| println!("{:?}", i_s))
