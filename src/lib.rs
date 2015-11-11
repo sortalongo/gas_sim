@@ -14,9 +14,10 @@ pub use vector::Vector;
 pub use particle::{Particle};
 pub use bounded_rand::BoundedRand;
 pub use cartesian_iter::{Combination2, Combination2Iter};
-pub use space::{Collision, Space, SpaceIterator};
+pub use space::{Collision, Space};
 pub use space_vec::SpaceVec;
 pub use space_box::SpaceBox;
+pub use spacetime::SpaceTime;
 
 mod bounds;
 mod float;
@@ -27,4 +28,5 @@ mod cartesian_iter;
 mod space;
 mod space_box;
 mod space_vec;
+mod spacetime;
 

@@ -22,11 +22,12 @@ fn main() {
   };
   let mut rng = StdRng::new().unwrap();
 
-  let init = SpaceBox::new_random(&mut rng, NUM_PARTICLES, min_particle, max_particle);
+  let init_box = SpaceBox::new_random(&mut rng, NUM_PARTICLES, min_particle, max_particle);
+  let mut init = SpaceTime::new(init_box, Time(0.));
 
   println!("starting: {:?}", init);
 
-  let mut space_pairs = SpaceIterator::new(init.iterate().unwrap())
+  let mut space_pairs = init.next().unwrap()
     .scan(init, |prev, mut next| {
        mem::swap(prev, &mut next);
        Some((next, prev.clone()))
