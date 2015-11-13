@@ -5,6 +5,8 @@ authors = ["dsotolongo <dsotolongo@twitter.com>"]
 
 [dependencies]
 rand = "0.3"
+log = "0.3"
+fern = "0.3.5"
 
 [dev-dependencies]
 rand = "0.3"

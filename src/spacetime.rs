@@ -45,6 +45,8 @@ impl<S: Space> Iterator for SpaceTime<S> {
           Collision::Bounce { t, .. } => t
         };
 
+        debug!("Found collision: {:?}", &c);
+
         self.space.update(c).map(|new_space| {
           let mut new_spacetime = SpaceTime::new(new_space, Time(t0 + t));
           mem::swap(&mut new_spacetime, self);
