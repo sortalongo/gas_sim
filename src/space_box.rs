@@ -32,7 +32,8 @@ impl SpaceBox {
       particles.push(new_p);
     }
 
-    SpaceBox::new(particles, min.x, max.x)
+    let r_vec = Vector((max.r, max.r));
+    SpaceBox::new(particles, &min.x - &r_vec, &max.x + &r_vec)
   }
 }
 
