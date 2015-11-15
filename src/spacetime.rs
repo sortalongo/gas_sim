@@ -32,6 +32,7 @@ impl<S: Space> Iterator for SpaceTime<S> {
   type Item = SpaceTime<S>;
   fn next(&mut self) -> Option<SpaceTime<S>> {
     let Time(t0) = self.time;
+    trace!("time: {}", t0);
 
     match self.space.next_collision() {
       Collision::Free => None,
@@ -45,7 +46,7 @@ impl<S: Space> Iterator for SpaceTime<S> {
           Collision::Bounce { t, .. } => t
         };
 
-        debug!("Found collision: {:?}", &c);
+        debug!("Next collision: {:?}", &c);
 
         self.space.update(c).map(|new_space| {
           let mut new_spacetime = SpaceTime::new(new_space, Time(t0 + t));

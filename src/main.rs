@@ -7,6 +7,7 @@ extern crate rand;
 use particles::*;
 use rand::{StdRng};
 use std::mem;
+use std::cmp::max;
 
 fn init_logger() {
   fern::init_global_logger(
@@ -19,6 +20,7 @@ fn main() {
   init_logger();
 
   const NUM_PARTICLES: usize = 10;
+  const STEP: CustomFloat = 1.;
 
   let max_particle = Particle {
     x: Vector((20., 20.)),
@@ -39,10 +41,33 @@ fn main() {
 
   info!("starting");
 
+  fn ceil(f: CustomFloat, step: CustomFloat) -> CustomFloat {
+    let rem = f % step;
+    f - rem + step
+  }
+  fn floor(f: CustomFloat, step: CustomFloat) -> CustomFloat {
+    let rem = f % step;
+    f - rem
+  }
+
   let mut space_pairs = init.next().unwrap()
     .scan(init, |prev, mut next| {
        mem::swap(prev, &mut next);
        Some((next, prev.clone()))
+    })
+    .flat_map(|(prev, next)| {
+      let t_start = ceil(prev.time.0, STEP);
+      let t_end = ceil(next.time.0, STEP);
+      trace!("start: {}, end: {}", t_start, t_end);
+
+      let steps = max(0, ((t_end - t_start) / STEP).trunc() as i32);
+      trace!("steps: {}", steps);
+      (0 .. steps).map(move |i| {
+        let t = Time(t_start + (i as CustomFloat) * STEP);
+        // evolve prev to t, return
+        let s = prev.space.map_particles(|p| p.evolve(t));
+        SpaceTime::new(s, t)
+      })
     });
 
   space_pairs

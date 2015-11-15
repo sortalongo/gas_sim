@@ -35,6 +35,13 @@ impl SpaceBox {
     let r_vec = Vector((max.r, max.r));
     SpaceBox::new(particles, &min.x - &r_vec, &max.x + &r_vec)
   }
+
+  pub fn map_particles<F: FnMut(&Particle) -> Particle>(&self, f: F) -> SpaceBox {
+    SpaceBox {
+      space_vec: self.space_vec.map_particles(f),
+      bounds: self.bounds.clone()
+    }
+  }
 }
 
 impl Space for SpaceBox {

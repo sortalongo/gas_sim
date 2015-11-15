@@ -22,6 +22,14 @@ impl<'l> SpaceVec {
   fn particle_pairs(&'l self) -> Combination2Iter<'l, Particle> {
     Combination2(&self.particles).into_iter()
   }
+
+  pub fn map_particles<F: FnMut(&Particle) -> Particle>(&self, f: F) -> SpaceVec {
+    SpaceVec {
+      particles: self.particles.iter()
+        .map(f)
+        .collect()
+    }
+  }
 }
 
 impl Space for SpaceVec {
