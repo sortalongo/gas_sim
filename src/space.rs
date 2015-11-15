@@ -2,7 +2,7 @@ use std::slice;
 use std::cmp::{PartialOrd, Ord, Ordering};
 use super::{custom_float, FloatOps, Particle, Time};
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Collision {
   Free,
   Wall { t: Time, prev: Particle, next: Particle },
@@ -10,6 +10,19 @@ pub enum Collision {
     t: Time,
     prev1: Particle, prev2: Particle,
     next1: Particle, next2: Particle
+  }
+}
+
+impl Collision {
+  pub fn t_unsafe(&self) -> Time {
+    match self {
+      &Collision::Free => {
+        error!("Collision::t_unsafe called on Collision::Free");
+        unreachable!()
+      },
+      &Collision::Wall { t, .. } |
+      &Collision::Bounce { t, .. } => t
+    }
   }
 }
 
@@ -38,8 +51,11 @@ impl Ord for Collision {
 pub trait Space: Sized {
   fn particles(&self) -> slice::Iter<Particle>;
 
+  fn map_particles<F>(&self, f: F) -> Self
+  where F: FnMut(&Particle) -> Particle;
+
   fn next_collision(&self) -> Collision;
 
-  fn update(&self, collision: Collision) -> Option<Self>;
+  fn update(&self, collision: &Collision) -> Option<Self>;
 }
 

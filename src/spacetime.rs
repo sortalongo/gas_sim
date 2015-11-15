@@ -16,43 +16,54 @@ impl<S: Space> SpaceTime<S> {
     }
   }
 
-  /*
-  type EverySpaceTimeIter<S> = iter::Scan<S, S, >;
-  pub fn every(&mut self, t: Time) -> SpaceTime<S> {
-    let mut space_pairs = self
-      .scan(init, |prev, mut next| {
-         mem::swap(prev, &mut next);
-         Some((next, prev.clone()))
-      });
+  pub fn every(self, step: Time) -> SpaceTimeStepIterator<S> {
+    SpaceTimeStepIterator {
+      next_coll: self.space.next_collision(),
+      spacetime: self,
+      step: step
+    }
   }
-  */
 }
 
-impl<S: Space> Iterator for SpaceTime<S> {
-  type Item = SpaceTime<S>;
-  fn next(&mut self) -> Option<SpaceTime<S>> {
-    let Time(t0) = self.time;
-    trace!("time: {}", t0);
 
-    match self.space.next_collision() {
+pub struct SpaceTimeStepIterator<S: Space> {
+  spacetime: SpaceTime<S>,
+  next_coll: Collision,
+  step: Time
+}
+
+impl<S: Space + Clone> Iterator for SpaceTimeStepIterator<S> {
+  type Item = SpaceTime<S>;
+
+  fn next(&mut self) -> Option<SpaceTime<S>> {
+    let t_0 = self.spacetime.time;
+    let t_next = Time(t_0.0 + self.step.0);
+
+    match self.next_coll.clone() {
       Collision::Free => None,
 
-      c @ Collision::Wall { .. } |
-      c @ Collision::Bounce { .. } => {
+      coll @ Collision::Wall { .. } |
+      coll @ Collision::Bounce { .. } => {
 
-        let Time(t) = match c { // annoying limitation in pattern matching
-          Collision::Free => unreachable!(),
-          Collision::Wall { t, .. } |
-          Collision::Bounce { t, .. } => t
+        let dt_next_coll = coll.t_unsafe();
+
+        let (next_coll, space_next) = if self.step.ge(&dt_next_coll) {
+          let space = self.spacetime.space
+            .update(&coll).unwrap() // guaranteed update
+            .map_particles(|p| p.evolve(Time(self.step.0 - dt_next_coll.0)));
+
+          (self.spacetime.space.next_collision(), space)
+        } else {
+          (coll,
+           self.spacetime.space.map_particles(|p| p.evolve(self.step))
+          )
         };
 
-        debug!("Next collision: {:?}", &c);
+        self.next_coll = next_coll;
+        let mut spacetime_next = SpaceTime::new(space_next, t_next);
+        mem::swap(&mut self.spacetime, &mut spacetime_next);
 
-        self.space.update(c).map(|new_space| {
-          let mut new_spacetime = SpaceTime::new(new_space, Time(t0 + t));
-          mem::swap(&mut new_spacetime, self);
-          new_spacetime
-        })
+        Some(spacetime_next)
       }
     }
   }

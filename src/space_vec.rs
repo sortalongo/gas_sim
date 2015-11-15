@@ -22,19 +22,20 @@ impl<'l> SpaceVec {
   fn particle_pairs(&'l self) -> Combination2Iter<'l, Particle> {
     Combination2(&self.particles).into_iter()
   }
-
-  pub fn map_particles<F: FnMut(&Particle) -> Particle>(&self, f: F) -> SpaceVec {
-    SpaceVec {
-      particles: self.particles.iter()
-        .map(f)
-        .collect()
-    }
-  }
 }
 
 impl Space for SpaceVec {
   fn particles(&self) -> slice::Iter<Particle> {
     self.particles.iter()
+  }
+
+  fn map_particles<F>(&self, f: F) -> SpaceVec
+  where F: FnMut(&Particle) -> Particle {
+    SpaceVec {
+      particles: self.particles.iter()
+        .map(f)
+        .collect()
+    }
   }
 
   fn next_collision(&self) -> Collision {
@@ -71,14 +72,14 @@ impl Space for SpaceVec {
     }
   }
 
-  fn update(&self, c: Collision) -> Option<Self> {
+  fn update(&self, c: &Collision) -> Option<Self> {
     match c {
-      Collision::Free => None,
-      Collision::Wall {..} => unreachable!(),
-      Collision::Bounce { t, prev1, prev2, next1, next2 } => {
+      &Collision::Free => None,
+      &Collision::Wall {..} => unreachable!(),
+      &Collision::Bounce { t, ref prev1, ref prev2, ref next1, ref next2 } => {
         let new_vec: Vec<_> = self.particles.iter().map( move |p: &Particle|
-          if p == &prev1 { next1.clone() }
-          else if p == &prev2 { next2.clone() }
+          if p == prev1 { next1.clone() }
+          else if p == prev2 { next2.clone() }
           else { p.evolve(t) }
         ).collect();
 

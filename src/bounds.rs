@@ -1,5 +1,5 @@
 use super::{Collision, FloatOps, Particle, Time, Vector};
-use std::cmp::{min, max};
+use std::cmp::{min};
 
 #[derive(Debug, Clone)]
 pub struct Bounds {

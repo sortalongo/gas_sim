@@ -35,19 +35,20 @@ impl SpaceBox {
     let r_vec = Vector((max.r, max.r));
     SpaceBox::new(particles, &min.x - &r_vec, &max.x + &r_vec)
   }
-
-  pub fn map_particles<F: FnMut(&Particle) -> Particle>(&self, f: F) -> SpaceBox {
-    SpaceBox {
-      space_vec: self.space_vec.map_particles(f),
-      bounds: self.bounds.clone()
-    }
-  }
 }
 
 impl Space for SpaceBox {
 
   fn particles(&self) -> slice::Iter<Particle> {
     self.space_vec.particles()
+  }
+
+  fn map_particles<F>(&self, f: F) -> SpaceBox
+  where F: FnMut(&Particle) -> Particle {
+    SpaceBox {
+      space_vec: self.space_vec.map_particles(f),
+      bounds: self.bounds.clone()
+    }
   }
 
   fn next_collision(&self) -> Collision {
@@ -60,9 +61,9 @@ impl Space for SpaceBox {
     min(inter_particle_coll, wall_coll)
   }
 
-  fn update(&self, collision: Collision) -> Option<Self> {
+  fn update(&self, collision: &Collision) -> Option<Self> {
     let space_vec_opt = match collision {
-      Collision::Wall { t, ref prev, ref next } => {
+      &Collision::Wall { t, ref prev, ref next } => {
         let new_vec: Vec<_> = self.particles().map( |p: &Particle|
           if p == prev { next.clone() }
           else { p.evolve(t) }

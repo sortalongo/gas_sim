@@ -7,7 +7,7 @@ mod custom_float {
   pub use std::f64::*;
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
 pub struct Time(pub CustomFloat);
 
 pub use bounds::Bounds;
