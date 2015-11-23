@@ -4,6 +4,8 @@ extern crate log;
 extern crate particles;
 extern crate rand;
 
+use std::usize;
+use std::string::String;
 use particles::*;
 use rand::{StdRng};
 
@@ -17,17 +19,19 @@ fn init_logger() {
 fn main() {
   init_logger();
 
-  const NUM_PARTICLES: usize = 10;
+  const NUM_PARTICLES: usize = 2;
   const STEP: Time = Time(1.);
 
   let max_particle = Particle {
-    x: Vector((20., 20.)),
+    id: 0,
+    x: Vector((5., 5.)),
     v: Vector((1., 1.)),
     m: 1.,
     r: 1.
   };
   let min_particle = Particle {
-    x: Vector((-20., -20.)),
+    id: usize::MAX,
+    x: Vector((-5., -5.)),
     v: Vector((-1., -1.)),
     m: 1.,
     r: 1.
@@ -38,11 +42,18 @@ fn main() {
   let init = SpaceTime::new(init_box, Time(0.));
 
   info!("starting");
+  debug!("first state: {:?}", init);
 
   init.every(STEP)
-    .enumerate()
     .take(10)
-    .inspect(|i_s| debug!("{:?}", i_s))
+    .map(|s| {
+      let p_str: String = s.space.particles()
+        .map(|p| format!("{}\t{}", (p.x.0).0, (p.x.0).1))
+        .collect::<Vec<_>>()
+        .join("\n");
+      format!("{}\n\n", p_str)
+    })
+    .inspect(|s| println!("{}", s))
     .last();
 
   info!("ending");

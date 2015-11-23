@@ -58,7 +58,9 @@ impl Space for SpaceBox {
       .min()
       .unwrap_or(Collision::Free);
 
-    min(inter_particle_coll, wall_coll)
+    let first_coll = min(inter_particle_coll, wall_coll);
+    debug!("next_collision: {:?}", first_coll);
+    first_coll
   }
 
   fn update(&self, collision: &Collision) -> Option<Self> {

@@ -95,12 +95,14 @@ mod tests {
   use super::super::{Particle, Space, Vector};
 
   const P1: Particle = Particle {
+    id: 1,
     x: Vector((-2., 0.)),
     v: Vector((1., 0.)),
     r: 1.,
     m: 1.
   };
   const P2: Particle = Particle {
+    id: 2,
     x: Vector((2., 0.)),
     v: Vector((-1., 0.)),
     r: 1.,

@@ -35,6 +35,7 @@ impl BoundedRand for Vector {
 impl BoundedRand for Particle {
   fn rand <R: Rng>(rng: &mut R, lower: &Particle, upper: &Particle) -> Particle {
     Particle {
+      id: rng.gen(),
       x: BoundedRand::rand(rng, &lower.x, &upper.x),
       v: BoundedRand::rand(rng, &lower.v, &upper.v),
       r: BoundedRand::rand(rng, &lower.r, &upper.r),

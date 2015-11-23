@@ -3,6 +3,7 @@ use super::vector::Vector;
 
 #[derive(Clone, Debug)]
 pub struct Particle {
+  pub id: usize,
   pub x: Vector,
   pub v: Vector,
   pub r: CustomFloat,
@@ -157,12 +158,14 @@ mod tests {
   #[test]
   fn bounce_symmetrical_particles() {
     let p1 = Particle {
+      id: 1,
       x: Vector((-1., 0.)),
       v: Vector((1., 0.)),
       r: 1.,
       m: 1.
     };
     let p2 = Particle {
+      id: 2,
       x: Vector((1., 0.)),
       v: Vector((-1., 0.)),
       r: 1.,
@@ -176,12 +179,14 @@ mod tests {
   #[test]
   fn impact_time_symmetrical_partices() {
     let p1 = Particle {
+      id: 1,
       x: Vector((-2., 0.)),
       v: Vector((1., 0.)),
       r: 1.,
       m: 1.
     };
     let p2 = Particle {
+      id: 2,
       x: Vector((2., 0.)),
       v: Vector((-1., 0.)),
       r: 1.,
