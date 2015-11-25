@@ -23,12 +23,13 @@ impl SpaceBox {
   pub fn new_random<R: Rng>(rng: &mut R, count: usize, min: Particle, max: Particle) -> SpaceBox {
     let mut particles = Vec::with_capacity(count);
 
-    for _ in 0..count {
+    for i in 0..count {
       let mut new_p: Particle;
       loop {
         new_p = BoundedRand::rand(rng, &min, &max);
         if ! particles.iter().any(|p: &Particle| p.overlaps(&new_p)) { break; }
       }
+      new_p.id = i;
       particles.push(new_p);
     }
 
@@ -67,7 +68,7 @@ impl Space for SpaceBox {
     let space_vec_opt = match collision {
       &Collision::Wall { t, ref prev, ref next } => {
         let new_vec: Vec<_> = self.particles().map( |p: &Particle|
-          if p == prev { next.clone() }
+          if p.id == prev.id { next.clone() }
           else { p.evolve(t) }
         ).collect();
 
@@ -79,4 +80,76 @@ impl Space for SpaceBox {
 
     space_vec_opt.map(|sv| SpaceBox { space_vec: sv, bounds: self.bounds.clone() } )
   }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+  use super::super::{Collision, Particle, Space, Vector, SpaceVec, Bounds, Time};
+
+  const P1: Particle = Particle {
+    id: 0,
+    x: Vector((0., 0.)),
+    v: Vector((0., 1.)),
+    r: 1.,
+    m: 1.
+  };
+  const P2: Particle = Particle {
+    id: 0,
+    x: Vector((1., 3.)),
+    v: Vector((-1., 0.)),
+    r: 1.,
+    m: 1.
+  };
+  const TOP_RIGHT: Vector = Vector((5., 5.));
+  const BOTTOM_LEFT: Vector = Vector((-5., -5.));
+
+  #[test]
+  fn single_particle_hits_wall() {
+    let space_box = SpaceBox::new(
+      vec![P1], BOTTOM_LEFT, TOP_RIGHT);
+
+    let l = ((TOP_RIGHT.0).1 - P1.r);
+    let expected_collision = Collision::Wall {
+        t: Time( l / (P1.v.0).1),
+        prev: P1,
+        next: Particle {
+          x: Vector((0., l)),
+          v: Vector((0., -1.)),
+          .. P1.clone() },
+    };
+    let collision = space_box.next_collision();
+    assert!(
+      collision == expected_collision,
+      "{:?} did not equal {:?}",
+      collision,
+      expected_collision);
+  }
+
+  #[test]
+  fn particles_collide_before_wall() {
+    let space_box = SpaceBox::new(
+      vec![P1, P2], BOTTOM_LEFT, TOP_RIGHT);
+
+    let l = (P2.x.0).1 - (P1.x.0).1 - P1.r - P2.r;
+    let expected_collision = Collision::Bounce {
+        t: Time( l / (P1.v.0).1),
+        prev1: P1, prev2: P2,
+        next1: Particle {
+          x: Vector((0., l)),
+          v: Vector((0., 0.)),
+          .. P1.clone() },
+        next2: Particle {
+          x: Vector((0., 3.)),
+          v: Vector((-1., 1.)),
+          .. P2.clone() },
+    };
+    let collision = space_box.next_collision();
+    assert!(
+      collision == expected_collision,
+      "{:?} did not equal {:?}",
+      collision,
+      expected_collision);
+  }
+
 }

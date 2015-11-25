@@ -14,14 +14,24 @@ pub enum Collision {
 }
 
 impl Collision {
-  pub fn t_unsafe(&self) -> Time {
+  pub fn t_cpy(&self) -> Time {
     match self {
-      &Collision::Free => {
+      &Collision::Wall { t, .. } |
+      &Collision::Bounce { t, .. } => t,
+      _ => {
         error!("Collision::t_unsafe called on Collision::Free");
         unreachable!()
       },
-      &Collision::Wall { t, .. } |
-      &Collision::Bounce { t, .. } => t
+    }
+  }
+  pub fn t_mut<'l>(&'l mut self) -> &'l mut Time {
+    match self {
+      &mut Collision::Wall { ref mut t, .. } |
+      &mut Collision::Bounce { ref mut t, .. } => t,
+      _ => {
+        error!("Collision::t_unsafe called on Collision::Free");
+        unreachable!()
+      },
     }
   }
 }
@@ -32,7 +42,7 @@ fn t_flops(coll: &Collision) -> FloatOps {
   match coll {
     &Collision::Wall { t: Time(t), .. } => FloatOps(t),
     &Collision::Bounce { t: Time(t), .. } => FloatOps(t),
-    &Collision::Free => FloatOps(custom_float::MAX),
+    &Collision::Free => FloatOps(custom_float::INFINITY),
   }
 }
 

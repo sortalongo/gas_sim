@@ -1,5 +1,4 @@
-use super::{Collision, FloatOps, Particle, Time, Vector};
-use std::cmp::{min};
+use super::{Collision, FloatOps, Particle, Time, Vector, custom_float};
 
 #[derive(Debug, Clone)]
 pub struct Bounds {
@@ -39,27 +38,32 @@ impl Bounds {
     let Vector((rx, ty)) = self.top_right;
     let Vector((lx, by)) = self.bottom_left;
 
-    let dx = if FloatOps(vx) >= FloatOps(0.) {
+    let dx = if vx.ge(&0.) { (xx - rx).abs() }
+      else { (xx - lx).abs() } - p.r;
+
+    let dy = if vy.ge(&0.) { (xy - by).abs() }
+      else { (xy - ty).abs() } - p.r;
+
+    let dxt = (dx / vx).abs();
+    let dyt = (dy / vy).abs();
+    let t = if dxt.le(&dyt) {
       vx *= -1.;
-      (xx - rx).abs()
-    } else {
-      (xx - lx).abs()
-    } - p.r;
-
-    let dy = if FloatOps(vy) >= FloatOps(0.) {
+      dxt
+    } else if dyt.le(&dxt) { // protect against INF
       vy *= -1.;
-      (xy - by).abs()
+      dyt
     } else {
-      (xy - ty).abs()
-    } - p.r;
+      custom_float::INFINITY
+    };
 
-    let t = min(
-      FloatOps((dx / vx).abs()),
-      FloatOps((dy / vy).abs())
-    );
+    print!("dx: {}, dy: {}, dxt: {}, dyt: {}, t: {}, t.le(0.): {}",
+      dx, dy, dxt, dyt, t, t.le(&0.));
 
-    if t <= FloatOps(0.) { Collision::Free } else {
-      let time = Time(t.0);
+    if t.le(&0.) || !t.is_finite() {
+      error!("Bounds encountered an illegal state: t: {}, p: {:?}", t, p);
+      Collision::Free
+    } else {
+      let time = Time(t);
       let p_next = {
         let p_ev = p.evolve(time);
         Particle { v: Vector((vx, vy)), .. p_ev }

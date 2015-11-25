@@ -78,8 +78,8 @@ impl Space for SpaceVec {
       &Collision::Wall {..} => unreachable!(),
       &Collision::Bounce { t, ref prev1, ref prev2, ref next1, ref next2 } => {
         let new_vec: Vec<_> = self.particles.iter().map( move |p: &Particle|
-          if p == prev1 { next1.clone() }
-          else if p == prev2 { next2.clone() }
+          if p.id == prev1.id { next1.clone() }
+          else if p.id == prev2.id { next2.clone() }
           else { p.evolve(t) }
         ).collect();
 
@@ -116,16 +116,5 @@ mod tests {
     };
     let pairs = p_box.particle_pairs().collect::<Vec<_>>();
     assert!(pairs.len() == 1);
-  }
-
-  #[test]
-  fn space_iterator_ends_when_collisions_stop() {
-    let mut space = SpaceVec { particles: vec![P1, P2] };
-    let mut i = 0;
-
-    while i < 5 && space.iterate() {
-      i += 1;
-    }
-    assert!(i == 1);
   }
 }
