@@ -19,7 +19,7 @@ fn init_logger() {
 fn main() {
   init_logger();
 
-  const NUM_PARTICLES: usize = 2;
+  const NUM_PARTICLES: usize = 1;
   const STEP: Time = Time(1.);
 
   let max_particle = Particle {

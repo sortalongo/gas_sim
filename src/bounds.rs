@@ -41,8 +41,8 @@ impl Bounds {
     let dx = if vx.ge(&0.) { (xx - rx).abs() }
       else { (xx - lx).abs() } - p.r;
 
-    let dy = if vy.ge(&0.) { (xy - by).abs() }
-      else { (xy - ty).abs() } - p.r;
+    let dy = if vy.ge(&0.) { (xy - ty).abs() }
+      else { (xy - by).abs() } - p.r;
 
     let dxt = (dx / vx).abs();
     let dyt = (dy / vy).abs();
@@ -55,9 +55,6 @@ impl Bounds {
     } else {
       custom_float::INFINITY
     };
-
-    print!("dx: {}, dy: {}, dxt: {}, dyt: {}, t: {}, t.le(0.): {}",
-      dx, dy, dxt, dyt, t, t.le(&0.));
 
     if t.le(&0.) || !t.is_finite() {
       error!("Bounds encountered an illegal state: t: {}, p: {:?}", t, p);
