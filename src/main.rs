@@ -19,7 +19,7 @@ fn init_logger() {
 fn main() {
   init_logger();
 
-  const NUM_PARTICLES: usize = 1;
+  const NUM_PARTICLES: usize = 3;
   const STEP: Time = Time(1.);
 
   let max_particle = Particle {
@@ -47,6 +47,7 @@ fn main() {
   init.every(STEP)
     .take(10)
     .map(|s| {
+      debug!("t: {:?}", s.time);
       let p_str: String = s.space.particles()
         .map(|p| format!("{}\t{}", (p.x.0).0, (p.x.0).1))
         .collect::<Vec<_>>()

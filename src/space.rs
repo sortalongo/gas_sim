@@ -14,14 +14,11 @@ pub enum Collision {
 }
 
 impl Collision {
-  pub fn t_cpy(&self) -> Time {
+  pub fn t(&self) -> Time {
     match self {
       &Collision::Wall { t, .. } |
       &Collision::Bounce { t, .. } => t,
-      _ => {
-        error!("Collision::t_unsafe called on Collision::Free");
-        unreachable!()
-      },
+      _ => Time(custom_float::INFINITY),
     }
   }
   pub fn t_mut<'l>(&'l mut self) -> &'l mut Time {
@@ -38,17 +35,9 @@ impl Collision {
 
 impl Eq for Collision { }
 
-fn t_flops(coll: &Collision) -> FloatOps {
-  match coll {
-    &Collision::Wall { t: Time(t), .. } => FloatOps(t),
-    &Collision::Bounce { t: Time(t), .. } => FloatOps(t),
-    &Collision::Free => FloatOps(custom_float::INFINITY),
-  }
-}
-
 impl PartialOrd for Collision {
   fn partial_cmp(&self, other: &Collision) -> Option<Ordering> {
-    t_flops(self).partial_cmp(&t_flops(other))
+    self.t().partial_cmp(&other.t())
   }
 }
 impl Ord for Collision {

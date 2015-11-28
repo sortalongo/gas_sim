@@ -8,11 +8,32 @@ pub struct SpaceTime<S: Space> {
   pub time: Time
 }
 
-impl<S: Space> SpaceTime<S> {
+impl<S: Space + Clone> SpaceTime<S> {
   pub fn new(s: S, t: Time) -> SpaceTime<S> {
     SpaceTime {
       space: s,
       time: t
+    }
+  }
+
+  fn advance(&self, dt: Time) -> SpaceTime<S> {
+    SpaceTime::new(
+      self.space.map_particles(|p| p.evolve(dt)),
+      Time(self.time.0 + dt.0)
+    )
+  }
+
+  fn update(&self, coll: &Collision) -> SpaceTime<S> {
+    match coll {
+      &Collision::Free => self.clone(),
+
+      &Collision::Wall { t, .. } |
+      &Collision::Bounce { t, .. } =>
+        SpaceTime::new(
+          self.space.update(coll)
+          .expect(&format!("SpaceTime::update unable to update child space")),
+          Time(self.time.0 + t.0)
+        )
     }
   }
 
@@ -36,38 +57,33 @@ impl<S: Space + Clone> Iterator for SpaceTimeStepIterator<S> {
   type Item = SpaceTime<S>;
 
   fn next(&mut self) -> Option<SpaceTime<S>> {
-    let t_0 = self.spacetime.time;
-    let t_next = Time(t_0.0 + self.step.0);
-
-    match self.next_coll.clone() {
-      Collision::Free => None,
-
-      mut coll @ Collision::Wall { .. } |
-      mut coll @ Collision::Bounce { .. } => {
-        let (next_coll, space_next) = if self.step.ge(&coll.t_cpy()) {
-          let dt_step = Time(self.step.0 - coll.t_cpy().0);
-
-          // FIXME: this assumes max 1 collision per timestep
-          let space = self.spacetime.space
-            .update(&coll).unwrap() // guaranteed update
-            .map_particles(|p| p.evolve(dt_step));
-
-          coll.t_mut().0 -= dt_step.0;
-
-          (space.next_collision(), space)
-        } else {
-          coll.t_mut().0 -= self.step.0;
-          (coll,
-           self.spacetime.space.map_particles(|p| p.evolve(self.step))
-          )
-        };
-
-        self.next_coll = next_coll;
-
-        let mut spacetime_next = SpaceTime::new(space_next, t_next);
+    match self.next_coll {
+      Collision::Free => {
+        let mut spacetime_next = self.spacetime.advance(self.step);
         mem::swap(&mut self.spacetime, &mut spacetime_next);
-
         Some(spacetime_next)
+      },
+
+      Collision::Wall { .. } |
+      Collision::Bounce { .. } => {
+        let to_return = self.spacetime.clone();
+
+        let mut dt_step = self.step;
+        let mut dt_coll = self.next_coll.t();
+
+        while dt_coll.lt(&dt_step) {
+          let spacetime_next = self.spacetime.update(&self.next_coll);
+          dt_step.0 -= dt_coll.0;
+
+          self.next_coll = spacetime_next.space.next_collision();
+          dt_coll = self.next_coll.t();
+
+          self.spacetime = spacetime_next;
+        }
+        self.spacetime = self.spacetime.advance(dt_step);
+        self.next_coll.t_mut().0 -= dt_step.0;
+
+        Some(to_return)
       }
     }
   }
