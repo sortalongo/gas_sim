@@ -19,7 +19,7 @@ impl<'l> SpaceVec {
 
   // Returns an iterator over all pairs of particles
   // contained in the Space.
-  fn particle_pairs(&'l self) -> Combination2Iter<'l, Particle> {
+  pub fn particle_pairs(&'l self) -> Combination2Iter<'l, Particle> {
     Combination2(&self.particles).into_iter()
   }
 }

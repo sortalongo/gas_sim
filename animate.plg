@@ -1,7 +1,15 @@
 # gnuplot script to create a gif from `infile`.dat, output to `outfile`
-stats infile
-set xrange [STATS_min_x - STATS_stddev_x : STATS_max_x + STATS_stddev_x]
-set yrange [STATS_min_y - STATS_stddev_y : STATS_max_y + STATS_stddev_y]
-set terminal gif animate delay 50
+stats infile u 3 nooutput
+max_r = STATS_max
+
+stats infile u 1:2 nooutput
+min_x = STATS_min_x
+max_x = STATS_max_x
+min_y = STATS_min_y
+max_y = STATS_max_y
+
+set xrange [min_x - max_r : max_x + max_r]
+set yrange [min_y - max_r : max_y + max_r]
+set terminal gif animate delay 5
 set output outfile
-do for [i=1:int(STATS_blocks)] {plot infile index (i-1) with circles }
+do for [i=1:int(STATS_blocks)-1] {plot infile index (i-1) with circles }

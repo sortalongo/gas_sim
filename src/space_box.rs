@@ -36,6 +36,10 @@ impl SpaceBox {
     let r_vec = Vector((max.r, max.r));
     SpaceBox::new(particles, &min.x - &r_vec, &max.x + &r_vec)
   }
+
+  pub fn space_vec<'l>(&'l self) -> &'l SpaceVec {
+    &self.space_vec
+  }
 }
 
 impl Space for SpaceBox {
@@ -60,7 +64,12 @@ impl Space for SpaceBox {
       .unwrap_or(Collision::Free);
 
     let first_coll = min(inter_particle_coll, wall_coll);
+
     debug!("next_collision: {:?}", first_coll);
+    if let Collision::Bounce { ref next1, ref next2, .. } = first_coll {
+      debug!("bounce distance: {:?}", (&next1.x - &next2.x).norm());
+    }
+
     first_coll
   }
 

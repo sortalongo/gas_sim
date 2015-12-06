@@ -19,22 +19,22 @@ fn init_logger() {
 fn main() {
   init_logger();
 
-  const NUM_PARTICLES: usize = 3;
-  const STEP: Time = Time(1.);
+  const NUM_PARTICLES: usize = 6;
+  const STEP: Time = Time(0.1);
 
   let max_particle = Particle {
     id: 0,
     x: Vector((5., 5.)),
     v: Vector((1., 1.)),
     m: 1.,
-    r: 1.
+    r: 0.3
   };
   let min_particle = Particle {
     id: usize::MAX,
     x: Vector((-5., -5.)),
     v: Vector((-1., -1.)),
     m: 1.,
-    r: 1.
+    r: 1.0
   };
   let mut rng = StdRng::new().unwrap();
 
@@ -45,11 +45,16 @@ fn main() {
   debug!("first state: {:?}", init);
 
   init.every(STEP)
-    .take(10)
+    .take(100)
     .map(|s| {
       debug!("t: {:?}", s.time);
+      if let Some((p1, p2)) = s.space.space_vec().particle_pairs()
+        .find(|&(ref p1, ref p2)| p1.overlaps(p2)) {
+        warn!("found overlapping particles:\n{:?}\n{:?}", p1, p2);
+      }
+
       let p_str: String = s.space.particles()
-        .map(|p| format!("{}\t{}", (p.x.0).0, (p.x.0).1))
+        .map(|p| format!("{}\t{}\t{}", (p.x.0).0, (p.x.0).1, p.r))
         .collect::<Vec<_>>()
         .join("\n");
       format!("{}\n\n", p_str)
